@@ -2,10 +2,11 @@ from vis_nav_game import Player, Action
 import pygame
 import cv2
 import os, shutil
+import subprocess
 
-if os.path.isdir("my_data"):
-    shutil.rmtree('my_data')
-os.mkdir('my_data')
+if os.path.isdir("src/VLAD/data"):
+    shutil.rmtree('src/VLAD/data')
+os.mkdir('src/VLAD/data')
 sample_freq = 8 
 action_hist =[]
 
@@ -36,6 +37,11 @@ class KeyboardPlayerPyGame(Player):
             pygame.K_SPACE: Action.CHECKIN,
             pygame.K_ESCAPE: Action.QUIT
         }
+    
+    def pre_navigation(self) -> None:
+        output = subprocess.Popen(["pwd", ], stdout=subprocess.PIPE).communicate()[0]
+        print(output)
+        return super().pre_navigation()
 
     def act(self):
         self.count+=1
@@ -62,14 +68,16 @@ class KeyboardPlayerPyGame(Player):
                     self.last_act ^= self.keymap[event.key]
         if self.last_act is not Action.IDLE:
             action_hist.append(self.last_act)
+            filename = str(len(action_hist))
+            cv2.imwrite('src/VLAD/data/'+filename+'_img.png', self.fpv)
+
         return self.last_act
 
     def show_target_images(self):
         targets = self.get_target_images()
         for index, img in enumerate(targets):
             filename = str(index)
-            print('save img')
-            cv2.imwrite('my_queries/'+filename+'_img.png', img)
+            cv2.imwrite('src/VLAD/queries/'+filename+'_img.png', img)
 
         if targets is None or len(targets) <= 0:
             return
@@ -111,12 +119,7 @@ class KeyboardPlayerPyGame(Player):
 
 
         self.fpv = fpv
-
-        if self.count % sample_freq == 0:
-            filename = str(self.count//sample_freq)
-            print('save img')
-            cv2.imwrite('my_data/'+filename+'_img.png', self.fpv)
-
+            
         if self.screen is None:
             h, w, _ = fpv.shape
             self.screen = pygame.display.set_mode((w, h))
