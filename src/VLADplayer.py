@@ -18,6 +18,8 @@ class KeyboardPlayerPyGame(Player):
         self.keymap = None
         super(KeyboardPlayerPyGame, self).__init__()
         self.count = 0
+        self.Phase = 1
+        self.index = 0 
 
     def reset(self):
         self.fpv = None
@@ -37,8 +39,15 @@ class KeyboardPlayerPyGame(Player):
 
     def act(self):
         self.count+=1
+        state = self.get_state()
+        if state is not None:
+            Phase = state[1]
+            if Phase is Phase.NAVIGATION:
+                self.index+=1
+                return action_hist[self.index]
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                self.Phase+=1
                 pygame.quit()
                 self.last_act = Action.QUIT
                 return Action.QUIT
