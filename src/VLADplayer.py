@@ -20,7 +20,7 @@ class KeyboardPlayerPyGame(Player):
         super(KeyboardPlayerPyGame, self).__init__()
         self.count = 0
         self.Phase = 1
-        self.index = 0 
+        self.index = -1 
 
     def reset(self):
         self.fpv = None
