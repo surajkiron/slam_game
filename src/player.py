@@ -111,16 +111,16 @@ class KeyboardPlayerPyGame(Player):
         rgb = convert_opencv_img_to_pygame(fpv)
         self.screen.blit(rgb, (0, 0))
         pygame.display.update()
-        
-        gray = cv2.cvtColor(fpv, cv2.COLOR_BGR2GRAY)
-        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
-        img = clahe.apply(gray)
-        kp, des = self.fe.get_keypts_and_desc(img)
-        R,t  = self.fe.get_pose(img,self._K)
-        self.pose += t
-        # print(self.pose)
-        print(np.linalg.det(R))
-        dispkp(img, kp)
+            
+        if self.last_act is not Action.IDLE:
+            gray = cv2.cvtColor(fpv, cv2.COLOR_BGR2GRAY)
+            clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+            img = clahe.apply(gray)
+            kp, des = self.fe.get_keypts_and_desc(img)
+            R,t  = self.fe.get_pose(img,self._K)
+            self.pose += t
+            print(self.pose)
+            dispkp(img, kp)
 
 
 if __name__ == "__main__":
