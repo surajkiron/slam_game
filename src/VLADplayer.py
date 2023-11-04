@@ -3,10 +3,14 @@ import pygame
 import cv2
 import os, shutil
 import subprocess
+import time
+from VLAD_finder import VLAD
 
-if os.path.isdir("src/VLAD/data"):
-    shutil.rmtree('src/VLAD/data')
-os.mkdir('src/VLAD/data')
+vlad = VLAD()
+
+if os.path.isdir("src/data"):
+    shutil.rmtree('src/data')
+os.mkdir('src/data')
 sample_freq = 8 
 action_hist =[]
 
@@ -21,6 +25,7 @@ class KeyboardPlayerPyGame(Player):
         self.count = 0
         self.Phase = 1
         self.index = -1 
+        self.target_loc = -1
 
     def reset(self):
         self.fpv = None
@@ -39,8 +44,11 @@ class KeyboardPlayerPyGame(Player):
         }
     
     def pre_navigation(self) -> None:
-        output = subprocess.Popen(["pwd", ], stdout=subprocess.PIPE).communicate()[0]
-        print(output)
+        
+        if self.last_act is Action.QUIT:
+            print("**************************************************************************************************************FUCK YOU")
+            vlad.train()
+            self.target_loc = vlad.query()
         return super().pre_navigation()
 
     def act(self):
@@ -48,7 +56,7 @@ class KeyboardPlayerPyGame(Player):
         state = self.get_state()
         if state is not None:
             Phase = state[1]
-            if Phase is Phase.NAVIGATION:
+            if Phase is Phase.NAVIGATION and self.index<=self.target_loc:
                 self.index+=1
                 return action_hist[self.index]
         for event in pygame.event.get():
@@ -69,7 +77,7 @@ class KeyboardPlayerPyGame(Player):
         if self.last_act is not Action.IDLE:
             action_hist.append(self.last_act)
             filename = str(len(action_hist))
-            cv2.imwrite('src/VLAD/data/'+filename+'_img.png', self.fpv)
+            cv2.imwrite('src/data/'+filename+'_img.png', self.fpv)
 
         return self.last_act
 
@@ -77,7 +85,7 @@ class KeyboardPlayerPyGame(Player):
         targets = self.get_target_images()
         for index, img in enumerate(targets):
             filename = str(index)
-            cv2.imwrite('src/VLAD/queries/'+filename+'_img.png', img)
+            cv2.imwrite('src/queries/'+filename+'_img.png', img)
 
         if targets is None or len(targets) <= 0:
             return
