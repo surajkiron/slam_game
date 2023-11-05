@@ -17,16 +17,15 @@ from VLADlib.Descriptors import *
 # getDescriptors for whole dataset
 # Path = path to the image dataset
 # functionHandleDescriptor={describeSURF, describeSIFT, describeORB}
-def getDescriptors(path,functionHandleDescriptor):
+def getDescriptors(image_list,functionHandleDescriptor):
     descriptors=list()
 
-    for imagePath in glob.glob(path+"/*.png"):
-        print(imagePath)
-        im=cv2.imread(imagePath)
+    # for imagePath in glob.glob(path+"/*.png"):
+    for im in image_list:
         kp,des = functionHandleDescriptor(im)
         if des is not None:
             descriptors.append(des)
-            print(len(kp))
+            # print(len(kp))
         
     #flatten list       
     descriptors = list(itertools.chain.from_iterable(descriptors))
@@ -41,7 +40,7 @@ def getDescriptors(path,functionHandleDescriptor):
 def  kMeansDictionary(training, k):
 
     #K-means algorithm
-    print(training.shape)
+    # print(training.shape)
     est = KMeans(n_clusters=k,init='k-means++',tol=0.0001,verbose=1).fit(training)
     #centers = est.cluster_centers_
     #labels = est.labels_
@@ -55,17 +54,15 @@ def  kMeansDictionary(training, k):
 #        visualDictionary = a visual dictionary from k-means algorithm
 
 
-def getVLADDescriptors(path,functionHandleDescriptor,visualDictionary):
+def getVLADDescriptors(image_list,functionHandleDescriptor,visualDictionary):
     descriptors=list()
     idImage =list()
-    for imagePath in glob.glob(path+"/*.png"):
-        print(imagePath)
-        im=cv2.imread(imagePath)
-        kp,des = functionHandleDescriptor(im)
+    for id, im in enumerate(image_list):
+        _,des = functionHandleDescriptor(im)
         if des is not None:
             v=VLAD(des,visualDictionary)
             descriptors.append(v)
-            idImage.append(imagePath)
+            idImage.append(id)#'/0/'+str(id)+'_')
                     
     #list to array    
     descriptors = np.asarray(descriptors)
@@ -161,12 +158,12 @@ def getVLADDescriptorsPerPDF(path,functionHandleDescriptor,visualDictionary):
                     
     #list to array    
     descriptors = np.asarray(descriptors)
-    print("descriptors: {}".format(descriptors))
-    print("idPDF: {}".format(idPDF))
-    print("len descriptors : {}".format(descriptors.shape))
-    print("len idpDF: {}".format(len(idPDF)))
-    print("total number of PDF's: {}".format(docCont))
-    print("processed number of PDF's: {}".format(docProcessed))
+    # print("descriptors: {}".format(descriptors))
+    # print("idPDF: {}".format(idPDF))
+    # print("len descriptors : {}".format(descriptors.shape))
+    # print("len idpDF: {}".format(len(idPDF)))
+    # print("total number of PDF's: {}".format(docCont))
+    # print("processed number of PDF's: {}".format(docProcessed))
 
     return descriptors, idPDF
 
@@ -247,7 +244,7 @@ def query(image, k,descriptorName, visualDictionary,tree):
     #compute descriptors
     dict={"SURF":describeSURF,"SIFT":describeSIFT,"ORB":describeORB}
     funDescriptor=dict[descriptorName]
-    kp, descriptor=funDescriptor(im)
+    _, descriptor=funDescriptor(im)
 
     #compute VLAD
     v=VLAD(descriptor,visualDictionary)
