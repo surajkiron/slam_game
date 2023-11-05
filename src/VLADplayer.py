@@ -1,17 +1,12 @@
 from vis_nav_game import Player, Action
 import pygame
 import cv2
-import os, shutil
-import subprocess
-import time
+# import os, shutil
 from VLAD_finder import VLAD
 
 vlad = VLAD()
 
-if os.path.isdir("src/data"):
-    shutil.rmtree('src/data')
-os.mkdir('src/data')
-sample_freq = 8 
+sample_rate = 3 
 action_hist =[]
 
 
@@ -26,12 +21,12 @@ class KeyboardPlayerPyGame(Player):
         self.Phase = 1
         self.index = -1 
         self.target_loc = -1
+        self.train_imgs = []
 
     def reset(self):
         self.fpv = None
         self.last_act = Action.IDLE
         self.screen = None
-
         pygame.init()
 
         self.keymap = {
@@ -46,25 +41,14 @@ class KeyboardPlayerPyGame(Player):
     def pre_navigation(self) -> None:
         
         if self.last_act is Action.QUIT:
-            print("**************************************************************************************************************FUCK YOU")
-            vlad.train()
+            print("******************************************PRE-NAVIGATION********************************************************************")
+            vlad.train(self.train_imgs)
             self.target_loc = vlad.query()
         return super().pre_navigation()
 
     def act(self):
         self.count+=1
-        state = self.get_state()
-        if state is not None:
-            Phase = state[1]
-            if Phase is Phase.NAVIGATION and self.index<=max(self.target_loc):
-                #Check for each image
-                for target_ in self.target_loc:
-                    if (self.index == target_):
-                        decision = ord(input("Is the location? \n" ))
-                        if (decision == 121 or decision == 89):
-                            return Action.QUIT
-                self.index+=1
-                return action_hist[self.index]
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.Phase+=1
@@ -80,11 +64,27 @@ class KeyboardPlayerPyGame(Player):
             if event.type == pygame.KEYUP:
                 if event.key in self.keymap:
                     self.last_act ^= self.keymap[event.key]
-        if self.last_act is not Action.IDLE:
+        if self.last_act is not Action.IDLE :
             action_hist.append(self.last_act)
-            filename = str(len(action_hist))
-            cv2.imwrite('src/data/'+filename+'_img.png', self.fpv)
+            if len(action_hist)%sample_rate is 0:
+                # filename = str(len(action_hist)//sample_rate)
+                # cv2.imwrite('src/data/'+filename+'_img.png', self.fpv)
+                self.train_imgs.append(self.fpv)
 
+        state = self.get_state()
+        if state is not None:
+            Phase = state[1]
+            if Phase is Phase.NAVIGATION and self.index<=max(sample_rate*self.target_loc):
+                #Check for each image
+                for target_ in self.target_loc:
+                    if (self.index == target_):
+                        decision = ord(input("Is the location? \n" ))
+                        if (decision == 121 or decision == 89):
+                            return Action.QUIT
+                self.index+=1
+                return action_hist[self.index]
+            
+        
         return self.last_act
 
     def show_target_images(self):

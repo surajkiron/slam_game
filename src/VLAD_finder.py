@@ -7,16 +7,15 @@ import cv2
 
 class VLAD(object):
     def __init__(self):
-        self.path = "src/data"
         self.descriptorName = "ORB"
         self.queryResults = []
         self.indexStructure = []
         self.visualDictionary = None
 
-    def train(self):
+    def train(self, train_imgs):
         #computing the descriptors
         dict={"SURF":describeSURF,"SIFT":describeSIFT,"ORB":describeORB}
-        descriptors=getDescriptors(self.path, dict[self.descriptorName])
+        descriptors=getDescriptors(train_imgs, dict[self.descriptorName])
 
 
     ######################################################################################################################################################
@@ -34,14 +33,14 @@ class VLAD(object):
 
 
         dict={"SURF":describeSURF,"SIFT":describeSIFT,"ORB":describeORB}  
-        V, imageID = getVLADDescriptors(self.path,dict[self.descriptorName],self.visualDictionary)
+        V, imageID = getVLADDescriptors(train_imgs,dict[self.descriptorName],self.visualDictionary)
 
 
         #estimating VLAD descriptors for the whole dataset
 
         leafSize = 40
         tree = indexBallTree(V,leafSize)
-        self.indexStructure = [imageID,tree,self.path]
+        self.indexStructure = [imageID,tree]
         
         return(0)
 
@@ -66,14 +65,14 @@ class VLAD(object):
             
             for i in ind:
                 # load the result image and display it
-                result = cv2.imread(imageID[i])
-                list_ = imageID[i].split('_')[0]
-                list_ = int(list_.split('/')[2])
-                self.queryResults.append(list_)
+                # list_ = imageID[i].split('_')[0]
+                # list_ = int(list_.split('/')[2])
+                self.queryResults.append(i)
 
 
 
         k= 1
+
         paths = ['src/queries/0_img.png', 'src/queries/1_img.png', 'src/queries/2_img.png', 'src/queries/3_img.png' ]
         for path in paths:
             query_single_image(path, k, self.descriptorName)
