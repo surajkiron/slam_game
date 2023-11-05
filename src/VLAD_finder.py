@@ -71,9 +71,11 @@ class VLAD(object):
 
 
 
-        k= 5
+        k= 1
+
         paths = ['src/queries/0_img.png', 'src/queries/1_img.png', 'src/queries/2_img.png', 'src/queries/3_img.png' ]
         for path in paths:
             query_single_image(path, k, self.descriptorName)
         print("queryResults: ", self.queryResults)
-        return statistics.median(self.queryResults)
+        print("sortedQuery: ", self.queryResults.sort())
+        return self.queryResults
