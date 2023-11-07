@@ -3,6 +3,9 @@ import pygame
 import cv2
 # import os, shutil
 from VLAD_finder import VLAD
+from SLAM import SLAM
+import numpy as np
+
 
 vlad = VLAD()
 
@@ -20,8 +23,11 @@ class KeyboardPlayerPyGame(Player):
         self.count = 0
         self.Phase = 1
         self.index = -1 
-        self.target_loc = -1
+        self.target_loc = []
         self.train_imgs = []
+        self.pose_hist = []
+        self.vio = SLAM()
+        self.pose = None
 
     def reset(self):
         self.fpv = None
@@ -44,6 +50,10 @@ class KeyboardPlayerPyGame(Player):
             print("******************************************PRE-NAVIGATION********************************************************************")
             vlad.train(self.train_imgs)
             self.target_loc = vlad.query()
+            target_locations = []
+            for target in self.target_loc:
+                target_locations.append(self.pose_hist[target])
+            self.vio.reset(target_locations)
         return super().pre_navigation()
 
     def act(self):
@@ -66,6 +76,7 @@ class KeyboardPlayerPyGame(Player):
                     self.last_act ^= self.keymap[event.key]
         if self.last_act is not Action.IDLE :
             action_hist.append(self.last_act)
+            self.pose_hist.append(self.pose.copy())
             if len(action_hist)%sample_rate is 0:
                 # filename = str(len(action_hist)//sample_rate)
                 # cv2.imwrite('src/data/'+filename+'_img.png', self.fpv)
@@ -84,7 +95,8 @@ class KeyboardPlayerPyGame(Player):
                 self.index+=1
                 return action_hist[self.index]
             
-        
+        cur_x,cur_z = self.vio.getOdometryFromOpticalFlow(cv2.cvtColor(self.fpv, cv2.COLOR_RGB2GRAY))
+        self.pose = [cur_x,cur_z]
         return self.last_act
 
     def show_target_images(self):
@@ -126,7 +138,7 @@ class KeyboardPlayerPyGame(Player):
         self.show_target_images()
 
     def see(self, fpv):
-
+        
         if fpv is None or len(fpv.shape) < 3:
             return
         
