@@ -58,7 +58,6 @@ class KeyboardPlayerPyGame(Player):
 
     def act(self):
         self.count+=1
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.Phase+=1
@@ -85,13 +84,7 @@ class KeyboardPlayerPyGame(Player):
         state = self.get_state()
         if state is not None:
             Phase = state[1]
-            if Phase is Phase.NAVIGATION and self.index<=max(sample_rate*self.target_loc):
-                #Check for each image
-                for target_ in self.target_loc:
-                    if (self.index == target_):
-                        decision = ord(input("Is the location? \n" ))
-                        if (decision == 121 or decision == 89):
-                            return Action.QUIT
+            if Phase is Phase.NAVIGATION and self.index<=sample_rate*self.target_loc:
                 self.index+=1
                 return action_hist[self.index]
             

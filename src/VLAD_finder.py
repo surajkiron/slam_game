@@ -11,6 +11,7 @@ class VLAD(object):
         self.queryResults = []
         self.indexStructure = []
         self.visualDictionary = None
+        self.min_variance = 1e6
 
     def train(self, train_imgs):
         #computing the descriptors
@@ -55,27 +56,25 @@ class VLAD(object):
 
         def query_single_image(path, k, descriptorName):
             
-            imageID=self.indexStructure[0]
             tree = self.indexStructure[1]
 
             #computing descriptors
             _,ind = query(path, k,descriptorName, self.visualDictionary,tree)
 
             ind=list(itertools.chain.from_iterable(ind))
-            
-            for i in ind:
-                # load the result image and display it
-                # list_ = imageID[i].split('_')[0]
-                # list_ = int(list_.split('/')[2])
-                self.queryResults.append(i)
+            print(ind)
+            variance = statistics.variance(ind)
+            if variance < self.min_variance: 
+                print("variance", variance)
+                self.min_variance = variance
+                self.queryResults = ind
 
 
 
-        k= 1
+        k= 5
 
         paths = ['src/queries/0_img.png', 'src/queries/1_img.png', 'src/queries/2_img.png', 'src/queries/3_img.png' ]
         for path in paths:
             query_single_image(path, k, self.descriptorName)
         print("queryResults: ", self.queryResults)
-        print("sortedQuery: ", self.queryResults.sort())
-        return self.queryResults
+        return max(self.queryResults)
