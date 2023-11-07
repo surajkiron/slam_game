@@ -9,9 +9,8 @@ import numpy as np
 
 vlad = VLAD()
 
-sample_rate = 3 
+sample_rate = 2 
 action_hist =[]
-
 
 class KeyboardPlayerPyGame(Player):
     def __init__(self):
@@ -28,6 +27,7 @@ class KeyboardPlayerPyGame(Player):
         self.pose_hist = []
         self.vio = SLAM()
         self.pose = None
+        self.AUTO_NAV = True  #change this to enable/disable NAV
 
     def reset(self):
         self.fpv = None
@@ -43,6 +43,8 @@ class KeyboardPlayerPyGame(Player):
             pygame.K_SPACE: Action.CHECKIN,
             pygame.K_ESCAPE: Action.QUIT
         }
+
+    def pre_exploration()
     
     def pre_navigation(self) -> None:
         
@@ -52,10 +54,10 @@ class KeyboardPlayerPyGame(Player):
             self.target_loc = vlad.query()
             target_locations = []
             # for target in self.target_loc:
-            print("-------------> target is ",self.target_loc,len(self.pose_hist))
-            for i,pose in enumerate(self.pose_hist):
-                print(i,"--",pose)
-            target_locations.append(self.pose_hist[sample_rate*self.target_loc])
+            print("-------------> targets are ",self.target_loc,len(self.pose_hist))
+            
+            for target in self.target_loc:
+                target_locations.append(self.pose_hist[sample_rate*target])
             self.vio.reset(target_locations)
         return super().pre_navigation()
 
@@ -89,12 +91,13 @@ class KeyboardPlayerPyGame(Player):
         state = self.get_state()
         if state is not None:
             Phase = state[1]
-            if Phase is Phase.NAVIGATION and self.index<=sample_rate*self.target_loc:
+            if Phase is Phase.NAVIGATION and self.index<=sample_rate*self.target_loc[0] and self.AUTO_NAV:
                 self.index+=1
                 cur_x,cur_z = self.vio.getOdometryFromOpticalFlow(cv2.cvtColor(self.fpv, cv2.COLOR_RGB2GRAY))
                 return action_hist[self.index]
-        cur_x,cur_z = self.vio.getOdometryFromOpticalFlow(cv2.cvtColor(self.fpv, cv2.COLOR_RGB2GRAY))  
-        self.pose = [cur_x,cur_z]  
+        if(self.last_act is not Action.IDLE):    
+            cur_x,cur_z = self.vio.getOdometryFromOpticalFlow(cv2.cvtColor(self.fpv, cv2.COLOR_RGB2GRAY))  
+            self.pose = [cur_x,cur_z]  
         return self.last_act
 
     def show_target_images(self):

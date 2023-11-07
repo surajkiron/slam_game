@@ -28,7 +28,7 @@ config = {
         'superpoint': {
             'nms_radius': 4,
             'keypoint_threshold': 0.005,
-            'max_keypoints': -1
+            'max_keypoints': 100
         },
         'superglue': {
             'weights': 'outdoor',
@@ -259,14 +259,12 @@ class VisualOdometry:
 		# self.cur_R,self.cur_t,self.cur_Normal = self.recoverPose(H,self.px_ref, self.px_cur)
 		self.cur_R = np.array([[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]])
 		angle = -np.pi/4
-		print("np cos,sin",np.cos(angle),np.sin(angle))
 		self.cur_R[0][0] = np.cos(angle)
 		self.cur_R[2][0] = -np.sin(angle)
 		self.cur_R[0][2] = np.sin(angle)
 		self.cur_R[2][2] = np.cos(angle)
 		self.cur_R[1][1] = 1
 
-		print("self.Cur_R second",self.cur_R)
 		self.frame_stage = STAGE_DEFAULT_FRAME 
 		self.px_ref = self.px_cur
 
@@ -293,14 +291,14 @@ class VisualOdometry:
 		#R,t = self.recoverPoseFromHomography(H)
 		R,t,self.cur_Normal = self.recoverPose(H,self.px_ref, self.px_cur)
 
-		if(np.linalg.norm(t)>0.1):
+		if(np.linalg.norm(t)>0.06):
 			E, mask = cv2.findEssentialMat(self.px_cur, self.px_cur, focal=self.focal, pp=self.pp, method=cv2.RANSAC, prob=0.999, threshold=1.0)
 			_, R, t, mask = cv2.recoverPose(E, self.px_cur, self.px_ref, focal=self.focal, pp = self.pp)
 
 		
 		self.frame_R=R
 		self.frame_T=t
-		absolute_scale = 5
+		absolute_scale = 2
 
 		if(absolute_scale > 0.01):
 			if(self.cur_t is None):

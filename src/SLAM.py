@@ -34,7 +34,6 @@ class SLAM:
 	def reset(self,target_locations):
 		vo.cur_R = np.array([[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]])
 		angle = -np.pi/4
-		print("np cos,sin",np.cos(angle),np.sin(angle))
 		vo.cur_R[0][0] = np.cos(angle)
 		vo.cur_R[2][0] = -np.sin(angle)
 		vo.cur_R[0][2] = np.sin(angle)
@@ -62,7 +61,6 @@ class SLAM:
 
 		cur_t = vo.cur_t
 		cur_R = vo.cur_R
-		print("cur_R = ",cur_R)
 		# _,pitch,_ = vo.getEulerAngles(cur_R)
 		# R_2d = np.array([[np.cos(pitch),-np.sin(pitch)],[np.sin(pitch),np.cos(pitch)]])
 		dir=np.array([20,0,20]).T
@@ -81,12 +79,12 @@ class SLAM:
 			
 			return np.eye(3),np.zeros((3,))
 		#print("x,y,z = ",x,y,z)
-		print("x,z = ",x,z)
+		
 		draw_x, draw_y = int(x)+290, int(z)+290
 
 
 
-		traj = np.zeros((600,600,3), dtype=np.uint8)
+		traj = np.zeros((720,720,3), dtype=np.uint8)
 
 		#draw camera loc
 		cv2.circle(traj, (draw_x,draw_y), 1, (img_id*255/4540,255-img_id*255/4540,0), 1)
@@ -108,12 +106,13 @@ class SLAM:
 
 		#draw trajectory
 		for i in range(1,len(traj_points)):
-			cv2.line(traj, (int(traj_points[i-1][0]),traj_points[i-1][1]), (traj_points[i][0],traj_points[i][1]), (255,0,0), 3) 
+			cv2.line(traj, (int(traj_points[i-1][0]),traj_points[i-1][1]), (traj_points[i][0],traj_points[i][1]), (255,0,0), 2) 
 		
 		for i in range(1,len(self.target_traj)):
-			cv2.line(traj, (int(self.target_traj[i-1][0]),self.target_traj[i-1][1]), (self.target_traj[i][0],self.target_traj[i][1]), (204,255,255), 3) 
-
+			cv2.line(traj, (int(self.target_traj[i-1][0]),self.target_traj[i-1][1]), (self.target_traj[i][0],self.target_traj[i][1]), (204,255,255), 2) 
+		print("target_location",self.target_locations)
 		for target in self.target_locations:
+			print("target",target)
 			cv2.circle(traj, (int(target[0]),int(target[1])), 1, (0,0,255), 5)
 
 		cv2.rectangle(traj, (10, 20), (600, 60), (0,0,0), -1)

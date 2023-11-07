@@ -62,12 +62,10 @@ class VLAD(object):
             _,ind = query(path, k,descriptorName, self.visualDictionary,tree)
 
             ind=list(itertools.chain.from_iterable(ind))
-            print(ind)
             variance = statistics.variance(ind)
             if variance < self.min_variance: 
-                print("variance", variance)
                 self.min_variance = variance
-                self.queryResults = ind
+                self.queryResults.append(statistics.median(ind))
 
 
 
@@ -77,4 +75,4 @@ class VLAD(object):
         for path in paths:
             query_single_image(path, k, self.descriptorName)
         print("queryResults: ", self.queryResults)
-        return max(self.queryResults)
+        return self.queryResults[::-1]
