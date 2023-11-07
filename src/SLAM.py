@@ -114,7 +114,7 @@ class SLAM:
 			cv2.line(traj, (int(self.target_traj[i-1][0]),self.target_traj[i-1][1]), (self.target_traj[i][0],self.target_traj[i][1]), (204,255,255), 3) 
 
 		for target in self.target_locations:
-			cv2.circle(traj, (290+int(target[0]),290+int(target[1])), 1, (0,0,255), 5)
+			cv2.circle(traj, (int(target[0]),int(target[1])), 1, (0,0,255), 5)
 
 		cv2.rectangle(traj, (10, 20), (600, 60), (0,0,0), -1)
 		text = "Coordinates: x=%2fm y=%2fm z=%2fm"%(x,y,z)
@@ -123,5 +123,5 @@ class SLAM:
 		#cv2.imshow('Road facing camera', img)
 		cv2.imshow('Trajectory', traj)
 		cv2.waitKey(1)
-		return cur_t[0],cur_t[2]
+		return draw_x,draw_y
 	

@@ -300,7 +300,7 @@ class VisualOdometry:
 		
 		self.frame_R=R
 		self.frame_T=t
-		absolute_scale = 2
+		absolute_scale = 5
 
 		if(absolute_scale > 0.01):
 			if(self.cur_t is None):

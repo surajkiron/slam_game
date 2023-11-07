@@ -52,8 +52,10 @@ class KeyboardPlayerPyGame(Player):
             self.target_loc = vlad.query()
             target_locations = []
             # for target in self.target_loc:
-            print("-------------> target is ",self.pose_hist[self.target_loc])
-            target_locations.append(self.pose_hist[self.target_loc])
+            print("-------------> target is ",self.target_loc,len(self.pose_hist))
+            for i,pose in enumerate(self.pose_hist):
+                print(i,"--",pose)
+            target_locations.append(self.pose_hist[sample_rate*self.target_loc])
             self.vio.reset(target_locations)
         return super().pre_navigation()
 
@@ -76,7 +78,9 @@ class KeyboardPlayerPyGame(Player):
                     self.last_act ^= self.keymap[event.key]
         if self.last_act is not Action.IDLE :
             action_hist.append(self.last_act)
-            self.pose_hist.append(self.pose.copy())
+            cur_x,cur_z = self.vio.getOdometryFromOpticalFlow(cv2.cvtColor(self.fpv, cv2.COLOR_RGB2GRAY))
+            self.pose = [cur_x,cur_z]
+            self.pose_hist.append(self.pose)
             if len(action_hist)%sample_rate is 0:
                 # filename = str(len(action_hist)//sample_rate)
                 # cv2.imwrite('src/data/'+filename+'_img.png', self.fpv)
@@ -89,9 +93,8 @@ class KeyboardPlayerPyGame(Player):
                 self.index+=1
                 cur_x,cur_z = self.vio.getOdometryFromOpticalFlow(cv2.cvtColor(self.fpv, cv2.COLOR_RGB2GRAY))
                 return action_hist[self.index]
-            
-        cur_x,cur_z = self.vio.getOdometryFromOpticalFlow(cv2.cvtColor(self.fpv, cv2.COLOR_RGB2GRAY))
-        self.pose = [cur_x,cur_z]
+        cur_x,cur_z = self.vio.getOdometryFromOpticalFlow(cv2.cvtColor(self.fpv, cv2.COLOR_RGB2GRAY))  
+        self.pose = [cur_x,cur_z]  
         return self.last_act
 
     def show_target_images(self):
