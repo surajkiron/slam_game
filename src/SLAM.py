@@ -28,7 +28,8 @@ VPRIndex=1
 class SLAM:
 	def __init__(self):
 		self.target_locations=[]
-
+		self.navigate = False
+		self.target_traj=  []
 
 	def reset(self,target_locations):
 		vo.cur_R = np.array([[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]])
@@ -41,9 +42,9 @@ class SLAM:
 		vo.cur_R[1][1] = 1
 
 		vo.cur_t[0],vo.cur_t[1],vo.cur_t[2]=0,0,0
-		traj_points.clear()
+		#traj_points.clear()
 		self.target_locations = target_locations
-
+		self.navigate = True
 
 
 #def Newframe_callback(data):
@@ -95,7 +96,10 @@ class SLAM:
 
 			pass
 		else:
-			traj_points.append([draw_x,draw_y])
+			if not self.navigate:
+				traj_points.append([draw_x,draw_y])
+			else:
+				self.target_traj.append([draw_x,draw_y])
 
 
 			prev_draw_x,prev_draw_y = draw_x,draw_y
@@ -105,6 +109,9 @@ class SLAM:
 		#draw trajectory
 		for i in range(1,len(traj_points)):
 			cv2.line(traj, (int(traj_points[i-1][0]),traj_points[i-1][1]), (traj_points[i][0],traj_points[i][1]), (255,0,0), 3) 
+		
+		for i in range(1,len(self.target_traj)):
+			cv2.line(traj, (int(self.target_traj[i-1][0]),self.target_traj[i-1][1]), (self.target_traj[i][0],self.target_traj[i][1]), (204,255,255), 3) 
 
 		for target in self.target_locations:
 			cv2.circle(traj, (290+int(target[0]),290+int(target[1])), 1, (0,0,255), 5)
