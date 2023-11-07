@@ -51,8 +51,9 @@ class KeyboardPlayerPyGame(Player):
             vlad.train(self.train_imgs)
             self.target_loc = vlad.query()
             target_locations = []
-            for target in self.target_loc:
-                target_locations.append(self.pose_hist[target])
+            # for target in self.target_loc:
+            print("-------------> target is ",self.pose_hist[self.target_loc])
+            target_locations.append(self.pose_hist[self.target_loc])
             self.vio.reset(target_locations)
         return super().pre_navigation()
 
@@ -86,6 +87,7 @@ class KeyboardPlayerPyGame(Player):
             Phase = state[1]
             if Phase is Phase.NAVIGATION and self.index<=sample_rate*self.target_loc:
                 self.index+=1
+                cur_x,cur_z = self.vio.getOdometryFromOpticalFlow(cv2.cvtColor(self.fpv, cv2.COLOR_RGB2GRAY))
                 return action_hist[self.index]
             
         cur_x,cur_z = self.vio.getOdometryFromOpticalFlow(cv2.cvtColor(self.fpv, cv2.COLOR_RGB2GRAY))

@@ -245,7 +245,7 @@ class VisualOdometry:
 		temp_l = l
 		l = c
 		c = temp_l
-		superPoint_Glue.display_matching_results(self.last_frame, self.new_frame, p1, p2, l, c, color)
+		#superPoint_Glue.display_matching_results(self.last_frame, self.new_frame, p1, p2, l, c, color)
 		if(l is None):
 			return
 		self.px_ref, self.px_cur = l,c
@@ -278,7 +278,7 @@ class VisualOdometry:
 		temp_l = l
 		l = c
 		c = temp_l
-		superPoint_Glue.display_matching_results(self.last_frame, self.new_frame, p1, p2, l, c, color)
+		#superPoint_Glue.display_matching_results(self.last_frame, self.new_frame, p1, p2, l, c, color)
 		#print(frame_id)
 		if(l is None):
 			return

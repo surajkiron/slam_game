@@ -107,13 +107,13 @@ class SLAM:
 			cv2.line(traj, (int(traj_points[i-1][0]),traj_points[i-1][1]), (traj_points[i][0],traj_points[i][1]), (255,0,0), 3) 
 
 		for target in self.target_locations:
-			cv2.circle(traj, (target[0],target[1]), 1, (255,0,0), 10)
+			cv2.circle(traj, (290+int(target[0]),290+int(target[1])), 1, (0,0,255), 5)
 
 		cv2.rectangle(traj, (10, 20), (600, 60), (0,0,0), -1)
 		text = "Coordinates: x=%2fm y=%2fm z=%2fm"%(x,y,z)
 		cv2.putText(traj, text, (20,40), cv2.FONT_HERSHEY_PLAIN, 1, (255,255,255), 1, 8)
 
-		cv2.imshow('Road facing camera', img)
+		#cv2.imshow('Road facing camera', img)
 		cv2.imshow('Trajectory', traj)
 		cv2.waitKey(1)
 		return cur_t[0],cur_t[2]
