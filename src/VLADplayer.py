@@ -22,6 +22,7 @@ class KeyboardPlayerPyGame(Player):
         self.index = -1 
         self.target_loc = -1
         self.train_imgs = []
+        self.AutoNav = True
 
     def reset(self):
         self.fpv = None
@@ -48,6 +49,8 @@ class KeyboardPlayerPyGame(Player):
 
     def act(self):
         self.count+=1
+        poll = None  
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.Phase+=1
@@ -58,6 +61,7 @@ class KeyboardPlayerPyGame(Player):
             if event.type == pygame.KEYDOWN:
                 if event.key in self.keymap:
                     self.last_act |= self.keymap[event.key]
+                    poll = self.last_act  # Store the newly pressed key action.
                 else:
                     self.show_target_images()
             if event.type == pygame.KEYUP:
@@ -73,9 +77,13 @@ class KeyboardPlayerPyGame(Player):
         state = self.get_state()
         if state is not None:
             Phase = state[1]
-            if Phase is Phase.NAVIGATION and self.index<=sample_rate*self.target_loc:
-                self.index+=1
-                return action_hist[self.index]
+            if Phase is Phase.NAVIGATION:
+                if poll is not None:
+                    self.AutoNav = False # AutoNav Disengaged
+                    
+                if self.index<=sample_rate*self.target_loc and self.AutoNav:
+                    self.index+=1
+                    return action_hist[self.index]
             
         
         return self.last_act
