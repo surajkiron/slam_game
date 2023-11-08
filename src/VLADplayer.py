@@ -44,7 +44,6 @@ class KeyboardPlayerPyGame(Player):
             pygame.K_ESCAPE: Action.QUIT
         }
 
-    def pre_exploration()
     
     def pre_navigation(self) -> None:
         
@@ -62,8 +61,12 @@ class KeyboardPlayerPyGame(Player):
         return super().pre_navigation()
 
     def act(self):
+
         self.count+=1
+        poll = None
+
         for event in pygame.event.get():
+
             if event.type == pygame.QUIT:
                 self.Phase+=1
                 pygame.quit()
@@ -71,30 +74,44 @@ class KeyboardPlayerPyGame(Player):
                 return Action.QUIT
 
             if event.type == pygame.KEYDOWN:
+
                 if event.key in self.keymap:
                     self.last_act |= self.keymap[event.key]
+                    poll = self.last_act
                 else:
                     self.show_target_images()
+
             if event.type == pygame.KEYUP:
+
                 if event.key in self.keymap:
                     self.last_act ^= self.keymap[event.key]
+
         if self.last_act is not Action.IDLE :
             action_hist.append(self.last_act)
             cur_x,cur_z = self.vio.getOdometryFromOpticalFlow(cv2.cvtColor(self.fpv, cv2.COLOR_RGB2GRAY))
             self.pose = [cur_x,cur_z]
             self.pose_hist.append(self.pose)
+
             if len(action_hist)%sample_rate is 0:
                 # filename = str(len(action_hist)//sample_rate)
                 # cv2.imwrite('src/data/'+filename+'_img.png', self.fpv)
                 self.train_imgs.append(self.fpv)
 
         state = self.get_state()
+
         if state is not None:
             Phase = state[1]
-            if Phase is Phase.NAVIGATION and self.index<=sample_rate*self.target_loc[0] and self.AUTO_NAV:
-                self.index+=1
-                cur_x,cur_z = self.vio.getOdometryFromOpticalFlow(cv2.cvtColor(self.fpv, cv2.COLOR_RGB2GRAY))
-                return action_hist[self.index]
+
+            if Phase is Phase.NAVIGATION:
+                
+                if poll is not None:
+                    self.AUTO_NAV = False
+
+                if  self.index<=sample_rate*self.target_loc[0] and self.AUTO_NAV:
+                    self.index+=1
+                    cur_x,cur_z = self.vio.getOdometryFromOpticalFlow(cv2.cvtColor(self.fpv, cv2.COLOR_RGB2GRAY))
+                    return action_hist[self.index]
+                
         if(self.last_act is not Action.IDLE):    
             cur_x,cur_z = self.vio.getOdometryFromOpticalFlow(cv2.cvtColor(self.fpv, cv2.COLOR_RGB2GRAY))  
             self.pose = [cur_x,cur_z]  

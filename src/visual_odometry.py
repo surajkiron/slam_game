@@ -28,7 +28,7 @@ config = {
         'superpoint': {
             'nms_radius': 4,
             'keypoint_threshold': 0.005,
-            'max_keypoints': 100
+            'max_keypoints': 2000
         },
         'superglue': {
             'weights': 'outdoor',
