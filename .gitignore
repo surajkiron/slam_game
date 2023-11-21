@@ -1,0 +1,7 @@
+src/__pycache__
+data/save/*.npy
+src/data/*.png
+src/queries/*.png
+src/record_path.py
+src/YAY_SAME_MAP.py
+explore_maze.pickle
