@@ -3,7 +3,7 @@ import pygame
 import cv2
 # import os, shutil
 from VLAD_interface import VLAD
-from slam import SLAM
+import slam as SLAM
 import numpy as np
 
 
@@ -25,7 +25,7 @@ class KeyboardPlayerPyGame(Player):
         self.target_loc = []
         self.train_imgs = []
         self.pose_hist = []
-        self.vio = SLAM()
+        # self.vio = SLAM()
         self.pose = None
         self.AUTO_NAV = True  #change this to enable/disable NAV
 
@@ -58,7 +58,7 @@ class KeyboardPlayerPyGame(Player):
             
             for target in self.target_loc:
                 target_locations.append(self.pose_hist[sample_rate*target])
-            self.vio.reset(target_locations)
+            SLAM.reset(target_locations)
         return super().pre_navigation()
 
     def act(self):
@@ -80,7 +80,7 @@ class KeyboardPlayerPyGame(Player):
                     self.last_act ^= self.keymap[event.key]
         if self.last_act is not Action.IDLE :
             action_hist.append(self.last_act)
-            cur_x,cur_z = self.vio.getOdometryFromOpticalFlow(cv2.cvtColor(self.fpv, cv2.COLOR_RGB2GRAY))
+            cur_x,cur_z = SLAM.getOdometryFromOpticalFlow(cv2.cvtColor(self.fpv, cv2.COLOR_RGB2GRAY))
             self.pose = [cur_x,cur_z]
             self.pose_hist.append(self.pose)
             if len(action_hist)%sample_rate is 0:
@@ -91,12 +91,12 @@ class KeyboardPlayerPyGame(Player):
         state = self.get_state()
         if state is not None:
             Phase = state[1]
-            # if Phase is Phase.NAVIGATION and self.index<=sample_rate*self.target_loc[0] and self.AUTO_NAV:
-            #     self.index+=1
-            #     cur_x,cur_z = self.vio.getOdometryFromOpticalFlow(cv2.cvtColor(self.fpv, cv2.COLOR_RGB2GRAY))
-            #     return action_hist[self.index]
+            if Phase is Phase.NAVIGATION and self.index<=sample_rate*self.target_loc[0] and self.AUTO_NAV:
+                self.index+=1
+                cur_x,cur_z = SLAM.getOdometryFromOpticalFlow(cv2.cvtColor(self.fpv, cv2.COLOR_RGB2GRAY))
+                return action_hist[self.index]
         if(self.last_act is not Action.IDLE):    
-            cur_x,cur_z = self.vio.getOdometryFromOpticalFlow(cv2.cvtColor(self.fpv, cv2.COLOR_RGB2GRAY))  
+            cur_x,cur_z = SLAM.getOdometryFromOpticalFlow(cv2.cvtColor(self.fpv, cv2.COLOR_RGB2GRAY))  
             self.pose = [cur_x,cur_z]  
         return self.last_act
 
@@ -127,9 +127,9 @@ class KeyboardPlayerPyGame(Player):
         stroke = 1
 
         cv2.putText(concat_img, 'Front View', (h_offset, w_offset), font, size, color, stroke, line)
-        cv2.putText(concat_img, 'Right View', (int(h/2) + h_offset, w_offset), font, size, color, stroke, line)
+        cv2.putText(concat_img, 'Left View', (int(h/2) + h_offset, w_offset), font, size, color, stroke, line)
         cv2.putText(concat_img, 'Back View', (h_offset, int(w/2) + w_offset), font, size, color, stroke, line)
-        cv2.putText(concat_img, 'Left View', (int(h/2) + h_offset, int(w/2) + w_offset), font, size, color, stroke, line)
+        cv2.putText(concat_img, 'Right View', (int(h/2) + h_offset, int(w/2) + w_offset), font, size, color, stroke, line)
 
         cv2.imshow(f'KeyboardPlayer:target_images', concat_img)
         cv2.waitKey(1)
@@ -170,5 +170,8 @@ class KeyboardPlayerPyGame(Player):
 
 
 if __name__ == "__main__":
+    import logging
+    logging.basicConfig(filename='vis_nav_player.log', filemode='w', level=logging.INFO,
+                        format='%(asctime)s - %(levelname)s: %(message)s', datefmt='%d-%b-%y %H:%M:%S')
     import vis_nav_game
     vis_nav_game.play(the_player=KeyboardPlayerPyGame())
